@@ -1,0 +1,1450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Excellence Assessment - Discover Your Sales DNA</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f7fa;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .assessment-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+        }
+        
+        .assessment-header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .assessment-header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .start-screen {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e4e8;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+        
+        .btn:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .question-container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e1e4e8;
+            border-radius: 4px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background: #667eea;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .question-header {
+            margin-bottom: 30px;
+        }
+        
+        .question-number {
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .scenario {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .options {
+            list-style: none;
+        }
+        
+        .option {
+            background: #f8f9fa;
+            margin-bottom: 15px;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .option:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+        
+        .option.selected {
+            border-color: #667eea;
+            background: #e6edff;
+        }
+        
+        .option-letter {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            background: #667eea;
+            color: white;
+            text-align: center;
+            line-height: 30px;
+            border-radius: 50%;
+            margin-right: 15px;
+            font-weight: 600;
+        }
+        
+        .option.selected .option-letter {
+            background: #764ba2;
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        
+        .timer {
+            text-align: center;
+            font-size: 1.2em;
+            color: #667eea;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        .results-container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .score-card {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .overall-score {
+            font-size: 4em;
+            color: #667eea;
+            font-weight: 700;
+        }
+        
+        .score-label {
+            font-size: 1.5em;
+            color: #555;
+            margin-bottom: 10px;
+        }
+        
+        .competency-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 40px 0;
+        }
+        
+        .competency-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .competency-score {
+            font-size: 2em;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+        
+        .swot-section {
+            margin: 40px 0;
+        }
+        
+        .swot-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        
+        .swot-card {
+            padding: 25px;
+            border-radius: 8px;
+        }
+        
+        .swot-card h3 {
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .swot-card ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .swot-card li {
+            margin-bottom: 10px;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .swot-card li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+        
+        .strengths { background: #e6f7ed; color: #1e7e34; }
+        .weaknesses { background: #ffe6e6; color: #bd2130; }
+        .opportunities { background: #e6f3ff; color: #004085; }
+        .threats { background: #fff3cd; color: #856404; }
+        
+        @media (max-width: 768px) {
+            .competency-grid, .swot-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .assessment-header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <div class="assessment-header">
+                <h1>Sales Excellence Assessment</h1>
+                <p>Discover Your Sales DNA & Unlock Your Potential</p>
+            </div>
+
+            <!-- Start Screen -->
+            <div v-if="stage === 'start'" class="start-screen">
+                <h2>Welcome to Your Sales Skills Analysis</h2>
+                <p style="margin: 20px 0; color: #666;">
+                    This comprehensive assessment will analyze your sales competencies across 
+                    7 critical areas through real-world scenarios. There are no "right" or "wrong" 
+                    answers - just different approaches that reveal your sales style and strengths.
+                </p>
+                
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input v-model="userData.name" type="text" placeholder="Enter your name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input v-model="userData.email" type="email" placeholder="Enter your email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Company</label>
+                    <input v-model="userData.company" type="text" placeholder="Enter your company name">
+                </div>
+                
+                <button @click="startAssessment" class="btn" :disabled="!userData.name || !userData.email">
+                    Start Assessment →
+                </button>
+            </div>
+
+            <!-- Question Screen -->
+            <div v-if="stage === 'assessment'" class="question-container">
+                <div class="timer">Time Remaining: {{ formatTime(timeRemaining) }}</div>
+                
+                <div class="progress-bar">
+                    <div class="progress" :style="{width: progressPercentage + '%'}"></div>
+                </div>
+                
+                <div class="question-header">
+                    <div class="question-number">Question {{ currentQuestionIndex + 1 }} of {{ questions.length }}</div>
+                    <h3>{{ currentQuestion.category }}</h3>
+                </div>
+                
+                <div class="scenario">
+                    <p>{{ currentQuestion.scenario }}</p>
+                </div>
+                
+                <ul class="options">
+                    <li v-for="(option, index) in currentQuestion.options" 
+                        :key="index"
+                        @click="selectAnswer(index)"
+                        :class="['option', { selected: selectedAnswer === index }]">
+                        <span class="option-letter">{{ String.fromCharCode(65 + index) }}</span>
+                        <span>{{ option.text }}</span>
+                    </li>
+                </ul>
+                
+                <div class="navigation">
+                    <button @click="previousQuestion" class="btn" :disabled="currentQuestionIndex === 0">
+                        ← Previous
+                    </button>
+                    <button @click="nextQuestion" class="btn" :disabled="selectedAnswer === null">
+                        {{ currentQuestionIndex === questions.length - 1 ? 'Finish' : 'Next' }} →
+                    </button>
+                </div>
+            </div>
+
+            <!-- Results Screen -->
+            <div v-if="stage === 'results'" class="results-container">
+                <div class="score-card">
+                    <div class="score-label">Your Overall Sales Excellence Score</div>
+                    <div class="overall-score">{{ overallScore }}%</div>
+                    <p style="color: #666; margin-top: 10px;">{{ getPerformanceLevel(overallScore) }}</p>
+                </div>
+                
+                <h2 style="text-align: center; margin-bottom: 30px;">Competency Breakdown</h2>
+                
+                <div class="competency-grid">
+                    <div v-for="(score, category) in categoryScores" :key="category" class="competency-card">
+                        <h4>{{ formatCategoryName(category) }}</h4>
+                        <div class="competency-score" :style="{color: getScoreColor(score)}">
+                            {{ Math.round(score) }}%
+                        </div>
+                        <p>{{ getCompetencyLevel(score) }}</p>
+                    </div>
+                </div>
+                
+                <canvas id="radarChart" width="400" height="400" style="max-width: 500px; margin: 40px auto; display: block;"></canvas>
+                
+                <div class="swot-section">
+                    <h2 style="text-align: center; margin-bottom: 30px;">Your SWOT Analysis</h2>
+                    <div class="swot-grid">
+                        <div class="swot-card strengths">
+                            <h3>Strengths</h3>
+                            <ul>
+                                <li v-for="strength in swotAnalysis.strengths" :key="strength">{{ strength }}</li>
+                            </ul>
+                        </div>
+                        <div class="swot-card weaknesses">
+                            <h3>Areas for Improvement</h3>
+                            <ul>
+                                <li v-for="weakness in swotAnalysis.weaknesses" :key="weakness">{{ weakness }}</li>
+                            </ul>
+                        </div>
+                        <div class="swot-card opportunities">
+                            <h3>Growth Opportunities</h3>
+                            <ul>
+                                <li v-for="opportunity in swotAnalysis.opportunities" :key="opportunity">{{ opportunity }}</li>
+                            </ul>
+                        </div>
+                        <div class="swot-card threats">
+                            <h3>Potential Challenges</h3>
+                            <ul>
+                                <li v-for="threat in swotAnalysis.threats" :key="threat">{{ threat }}</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <button @click="downloadReport" class="btn" style="display: block; margin: 40px auto;">
+                    Download Full Report (PDF)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+        
+        createApp({
+            data() {
+                return {
+                    stage: 'start', // start, assessment, results
+                    userData: {
+                        name: '',
+                        email: '',
+                        company: ''
+                    },
+                    currentQuestionIndex: 0,
+                    selectedAnswer: null,
+                    answers: {},
+                    timeRemaining: 1800, // 30 minutes
+                    timer: null,
+                    questions: [
+                        // Prospecting & Pipeline Management
+                        {
+                            id: 1,
+                            category: "Prospecting & Pipeline Management",
+                            scenario: "You've just joined a new company selling B2B software. You have no existing pipeline and need to build from scratch. Your manager expects you to have 50 qualified opportunities within 30 days. How do you approach this challenge?",
+                            options: [
+                                {
+                                    text: "Immediately start cold calling 100+ companies per day from a purchased list to maximize volume",
+                                    scores: { prospecting: 2, strategic: 1, relationship: 1, efficiency: 2 }
+                                },
+                                {
+                                    text: "Research your ideal customer profile, identify 20 high-value targets, find warm introduction paths through LinkedIn, and create personalized outreach",
+                                    scores: { prospecting: 5, strategic: 5, relationship: 4, efficiency: 4 }
+                                },
+                                {
+                                    text: "Set up automated email sequences to 500+ prospects and focus on those who respond",
+                                    scores: { prospecting: 3, strategic: 2, relationship: 2, efficiency: 3 }
+                                },
+                                {
+                                    text: "Attend every networking event possible and collect as many business cards as you can",
+                                    scores: { prospecting: 2, strategic: 2, relationship: 3, efficiency: 1 }
+                                }
+                            ]
+                        },
+                        {
+                            id: 2,
+                            category: "Prospecting & Pipeline Management",
+                            scenario: "Your pipeline shows: 5 deals closing this month worth $50K, 10 deals in negotiation worth $200K, and 30 early-stage opportunities. Your quota is $150K/month. What's your focus for the next two weeks?",
+                            options: [
+                                {
+                                    text: "Focus 90% on closing the 5 deals to hit this month's target, worry about next month later",
+                                    scores: { prospecting: 1, strategic: 2, relationship: 3, efficiency: 2 }
+                                },
+                                {
+                                    text: "Balance time between securing the 5 closes (40%), advancing the 10 negotiations (40%), and qualifying the 30 opportunities (20%)",
+                                    scores: { prospecting: 4, strategic: 5, relationship: 4, efficiency: 5 }
+                                },
+                                {
+                                    text: "Focus mainly on the 10 deals in negotiation as they represent the biggest revenue opportunity",
+                                    scores: { prospecting: 3, strategic: 3, relationship: 3, efficiency: 3 }
+                                },
+                                {
+                                    text: "Delegate the early-stage opportunities to a junior rep and split time between closing and negotiating deals",
+                                    scores: { prospecting: 3, strategic: 4, relationship: 3, efficiency: 4 }
+                                }
+                            ]
+                        },
+                        {
+                            id: 3,
+                            category: "Prospecting & Pipeline Management",
+                            scenario: "You notice that your conversion rate from initial contact to qualified opportunity has dropped from 20% to 10% over the last quarter. How do you diagnose and address this issue?",
+                            options: [
+                                {
+                                    text: "Double your outreach volume to compensate for the lower conversion rate",
+                                    scores: { prospecting: 2, strategic: 1, relationship: 1, efficiency: 1 }
+                                },
+                                {
+                                    text: "Analyze your recent lost opportunities, identify patterns, refine your ideal customer profile, and adjust your targeting criteria",
+                                    scores: { prospecting: 5, strategic: 5, relationship: 3, efficiency: 5 }
+                                },
+                                {
+                                    text: "Blame marketing for sending poor quality leads and request better support",
+                                    scores: { prospecting: 1, strategic: 1, relationship: 1, efficiency: 1 }
+                                },
+                                {
+                                    text: "Focus on improving your pitch and presentation skills through additional training",
+                                    scores: { prospecting: 3, strategic: 2, relationship: 3, efficiency: 2 }
+                                }
+                            ]
+                        },
+                        
+                        // Needs Discovery & Qualification
+                        {
+                            id: 4,
+                            category: "Needs Discovery & Qualification",
+                            scenario: "During a discovery call, the prospect says: 'We're pretty happy with our current solution. We're just looking around to see what else is out there.' Their website shows rapid growth and recent funding. How do you proceed?",
+                            options: [
+                                {
+                                    text: "Accept their statement and offer to send information for future consideration",
+                                    scores: { discovery: 1, strategic: 1, relationship: 2, closing: 1 }
+                                },
+                                {
+                                    text: "Say 'I understand you're happy with your current solution. Help me understand - what would have to be true about an alternative for you to even consider making a change?'",
+                                    scores: { discovery: 5, strategic: 5, relationship: 5, closing: 4 }
+                                },
+                                {
+                                    text: "Immediately launch into how your solution is superior to any competitor",
+                                    scores: { discovery: 1, strategic: 1, relationship: 1, closing: 1 }
+                                },
+                                {
+                                    text: "Ask 'What specific features are you looking for that your current solution doesn't have?'",
+                                    scores: { discovery: 3, strategic: 3, relationship: 3, closing: 3 }
+                                }
+                            ]
+                        },
+                        {
+                            id: 5,
+                            category: "Needs Discovery & Qualification",
+                            scenario: "A prospect schedules a call but opens with: 'I only have 15 minutes, can you just show me a quick demo and pricing?' You know that understanding their needs typically takes 30-45 minutes. What's your approach?",
+                            options: [
+                                {
+                                    text: "Respect their time and jump straight into a generic demo and pricing",
+                                    scores: { discovery: 1, strategic: 1, relationship: 2, closing: 1 }
+                                },
+                                {
+                                    text: "Say 'I appreciate you're pressed for time. To make these 15 minutes valuable for you, could you share the main challenge that prompted you to look for a solution?'",
+                                    scores: { discovery: 5, strategic: 5, relationship: 5, closing: 4 }
+                                },
+                                {
+                                    text: "Tell them you need at least 45 minutes and ask to reschedule",
+                                    scores: { discovery: 2, strategic: 2, relationship: 1, closing: 1 }
+                                },
+                                {
+                                    text: "Give a 10-minute demo and rush through pricing in the last 5 minutes",
+                                    scores: { discovery: 2, strategic: 2, relationship: 3, closing: 2 }
+                                }
+                            ]
+                        },
+                        {
+                            id: 6,
+                            category: "Needs Discovery & Qualification",
+                            scenario: "During discovery, you uncover that the prospect has a budget of $50K but your solution starts at $75K. They seem very interested and are a perfect fit otherwise. How do you handle this?",
+                            options: [
+                                {
+                                    text: "Thank them for their time and disqualify them immediately",
+                                    scores: { discovery: 2, strategic: 1, relationship: 1, closing: 1 }
+                                },
+                                {
+                                    text: "Explore the value gap: 'Help me understand - if we could demonstrate ROI of 3X within 6 months, how might that change your budget considerations?'",
+                                    scores: { discovery: 5, strategic: 5, relationship: 4, closing: 5 }
+                                },
+                                {
+                                    text: "Immediately offer a discount to match their budget",
+                                    scores: { discovery: 1, strategic: 1, relationship: 2, closing: 2 }
+                                },
+                                {
+                                    text: "Suggest they come back when they have more budget",
+                                    scores: { discovery: 2, strategic: 2, relationship: 2, closing: 1 }
+                                }
+                            ]
+                        },
+                        
+                        // Value Proposition & Presentation
+                        {
+                            id: 7,
+                            category: "Value Proposition & Presentation",
+                            scenario: "You're presenting to a committee of 6 people. The CFO keeps checking their phone, the IT director is asking highly technical questions, and the end users seem confused. How do you regain control and engagement?",
+                            options: [
+                                {
+                                    text: "Power through your standard presentation and hope it addresses everyone's concerns",
+                                    scores: { presentation: 1, strategic: 1, relationship: 1, adaptability: 1 }
+                                },
+                                {
+                                    text: "Pause and say 'I sense we might have different priorities in the room. Could each of you share your #1 goal for this evaluation?' Then adapt accordingly",
+                                    scores: { presentation: 5, strategic: 5, relationship: 5, adaptability: 5 }
+                                },
+                                {
+                                    text: "Focus on impressing the most senior person (CFO) and ignore the others",
+                                    scores: { presentation: 2, strategic: 2, relationship: 1, adaptability: 1 }
+                                },
+                                {
+                                    text: "Speed up to finish quickly since you're losing their attention",
+                                    scores: { presentation: 1, strategic: 1, relationship: 2, adaptability: 1 }
+                                }
+                            ]
+                        },
+                        {
+                            id: 8,
+                            category: "Value Proposition & Presentation",
+                            scenario: "A prospect says: 'Your solution looks identical to your competitor's but they're 30% cheaper. Why should we pay more?' How do you respond?",
+                            options: [
+                                {
+                                    text: "Immediately start criticizing the competitor's weaknesses",
+                                    scores: { presentation: 1, strategic: 1, relationship: 1, trust: 1 }
+                                },
+                                {
+                                    text: "Say 'I understand price is important. Beyond price, what are the 2-3 factors that will most impact your decision?' Then differentiate on those specific areas",
+                                    scores: { presentation: 5, strategic: 5, relationship: 5, trust: 5 }
+                                },
+                                {
+                                    text: "Offer to match their price to win the deal",
+                                    scores: { presentation: 2, strategic: 1, relationship: 2, trust: 2 }
+                                },
+                                {
+                                    text: "Show them your customer testimonials and success stories",
+                                    scores: { presentation: 3, strategic: 3, relationship: 3, trust: 4 }
+                                }
+                            ]
+                        },
+                        {
+                            id: 9,
+                            category: "Value Proposition & Presentation",
+                            scenario: "You're presenting your software solution when the CEO interrupts: 'This all sounds very complicated. We're not a tech company. How do we know this won't disrupt our operations?' What's your response?",
+                            options: [
+                                {
+                                    text: "Launch into a detailed explanation of how simple your technology actually is",
+                                    scores: { presentation: 2, strategic: 2, relationship: 2, trust: 2 }
+                                },
+                                {
+                                    text: "Say 'That's a valid concern. Let me show you how three similar non-tech companies implemented this with zero disruption. In fact, their biggest challenge was getting employees to go home because they enjoyed using it so much.'",
+                                    scores: { presentation: 5, strategic: 5, relationship: 5, trust: 5 }
+                                },
+                                {
+                                    text: "Assure them your support team will handle everything",
+                                    scores: { presentation: 3, strategic: 3, relationship: 3, trust: 3 }
+                                },
+                                {
+                                    text: "Suggest starting with a smaller pilot program",
+                                    scores: { presentation: 4, strategic: 4, relationship: 4, trust: 4 }
+                                }
+                            ]
+                        },
+                        
+                        // Objection Handling & Negotiation
+                        {
+                            id: 10,
+                            category: "Objection Handling & Negotiation",
+                            scenario: "After your presentation, the prospect says: 'This looks great, but we just don't have the bandwidth to implement something new right now.' Their competitor just announced a major innovation. How do you respond?",
+                            options: [
+                                {
+                                    text: "Accept their objection and offer to follow up in 6 months",
+                                    scores: { objection: 1, strategic: 1, persistence: 1, closing: 1 }
+                                },
+                                {
+                                    text: "Say 'I hear you on bandwidth. I'm curious - with your competitor's recent announcement, what's the cost of maintaining status quo for another 6 months?'",
+                                    scores: { objection: 5, strategic: 5, persistence: 5, closing: 5 }
+                                },
+                                {
+                                    text: "Push harder and emphasize they'll fall behind their competition",
+                                    scores: { objection: 2, strategic: 3, persistence: 2, closing: 2 }
+                                },
+                                {
+                                    text: "Offer to do most of the implementation work for them",
+                                    scores: { objection: 3, strategic: 2, persistence: 3, closing: 3 }
+                                }
+                            ]
+                        },
+                        {
+                            id: 11,
+                            category: "Objection Handling & Negotiation",
+                            scenario: "In final negotiations, the prospect says: 'We need a 40% discount, a 90-day trial period, and unlimited support, or we'll go with your competitor.' Your manager has given you 20% discount authority. What's your move?",
+                            options: [
+                                {
+                                    text: "Immediately escalate to your manager for approval",
+                                    scores: { objection: 2, strategic: 2, negotiation: 1, closing: 2 }
+                                },
+                                {
+                                    text: "Say 'I appreciate your position. Help me understand - if we could meet you halfway on the discount but demonstrate 2X ROI within 60 days, would that work?'",
+                                    scores: { objection: 5, strategic: 5, negotiation: 5, closing: 5 }
+                                },
+                                {
+                                    text: "Stand firm and risk losing the deal",
+                                    scores: { objection: 2, strategic: 2, negotiation: 2, closing: 1 }
+                                },
+                                {
+                                    text: "Accept all their demands to win the deal",
+                                    scores: { objection: 1, strategic: 1, negotiation: 1, closing: 2 }
+                                }
+                            ]
+                        },
+                        {
+                            id: 12,
+                            category: "Objection Handling & Negotiation",
+                            scenario: "The prospect's legal team returns your contract with 47 redlines and says: 'These are all non-negotiable.' Many conflict with your company's policies. How do you proceed?",
+                            options: [
+                                {
+                                    text: "Forward everything to your legal team and step back",
+                                    scores: { objection: 2, strategic: 2, negotiation: 2, leadership: 1 }
+                                },
+                                {
+                                    text: "Schedule a call with their legal and business teams: 'Let's prioritize these by business impact. Which 5 changes are most critical for you to move forward?'",
+                                    scores: { objection: 5, strategic: 5, negotiation: 5, leadership: 5 }
+                                },
+                                {
+                                    text: "Tell them your contract is standard and non-negotiable",
+                                    scores: { objection: 1, strategic: 1, negotiation: 1, leadership: 1 }
+                                },
+                                {
+                                    text: "Accept all changes to expedite the deal",
+                                    scores: { objection: 1, strategic: 1, negotiation: 1, leadership: 1 }
+                                }
+                            ]
+                        },
+                        
+                        // Closing & Gaining Commitment
+                        {
+                            id: 13,
+                            category: "Closing & Gaining Commitment",
+                            scenario: "After 3 months of evaluation, the prospect says: 'We really like your solution, but we need to think about it more.' End of quarter is in 5 days. What's your approach?",
+                            options: [
+                                {
+                                    text: "Pressure them with an end-of-quarter discount that expires in 48 hours",
+                                    scores: { closing: 2, strategic: 2, relationship: 1, trust: 1 }
+                                },
+                                {
+                                    text: "Say 'I understand. What specifically do you need to think through? And what would need to be true for you to feel confident moving forward this week?'",
+                                    scores: { closing: 5, strategic: 5, relationship: 5, trust: 5 }
+                                },
+                                {
+                                    text: "Accept their timeline and follow up next quarter",
+                                    scores: { closing: 1, strategic: 1, relationship: 3, trust: 3 }
+                                },
+                                {
+                                    text: "Send them more case studies and testimonials",
+                                    scores: { closing: 2, strategic: 2, relationship: 3, trust: 3 }
+                                }
+                            ]
+                        },
+                        {
+                            id: 14,
+                            category: "Closing & Gaining Commitment",
+                            scenario: "You're in the final meeting. Everyone loves the solution, but the CFO says: 'This wasn't in our budget for this year.' The team lead whispers to you: 'We really need this.' How do you close?",
+                            options: [
+                                {
+                                    text: "Suggest they wait until next year's budget cycle",
+                                    scores: { closing: 1, strategic: 1, relationship: 2, creativity: 1 }
+                                },
+                                {
+                                    text: "Address the CFO: 'I understand budget constraints. What if we could structure this to be cash-flow positive from month one? Would that change your perspective?'",
+                                    scores: { closing: 5, strategic: 5, relationship: 4, creativity: 5 }
+                                },
+                                {
+                                    text: "Offer a massive discount to fit their budget",
+                                    scores: { closing: 2, strategic: 1, relationship: 2, creativity: 1 }
+                                },
+                                {
+                                    text: "Appeal to the team lead to convince the CFO",
+                                    scores: { closing: 3, strategic: 3, relationship: 2, creativity: 2 }
+                                }
+                            ]
+                        },
+                        {
+                            id: 15,
+                            category: "Closing & Gaining Commitment",
+                            scenario: "The decision maker says: 'I'm ready to move forward, but I need to get buy-in from my team first. They're skeptical about changing systems.' What's your strategy?",
+                            options: [
+                                {
+                                    text: "Wait for them to convince their team on their own",
+                                    scores: { closing: 1, strategic: 1, leadership: 1, support: 1 }
+                                },
+                                {
+                                    text: "Offer: 'Would it help if I joined that meeting to address their specific concerns? I can share how similar teams overcame initial skepticism.'",
+                                    scores: { closing: 5, strategic: 5, leadership: 5, support: 5 }
+                                },
+                                {
+                                    text: "Send them materials to share with their team",
+                                    scores: { closing: 2, strategic: 2, leadership: 2, support: 2 }
+                                },
+                                {
+                                    text: "Suggest a trial period to win over the skeptics",
+                                    scores: { closing: 3, strategic: 3, leadership: 3, support: 3 }
+                                }
+                            ]
+                        },
+                        
+                        // Relationship Building & Trust
+                        {
+                            id: 16,
+                            category: "Relationship Building & Trust",
+                            scenario: "A prospect asks: 'Your competitor claims they can deliver the same results for less money. They showed us some pretty compelling case studies. What's your take on that?'",
+                            options: [
+                                {
+                                    text: "Diplomatically question the validity of their case studies",
+                                    scores: { trust: 2, relationship: 1, integrity: 1, confidence: 2 }
+                                },
+                                {
+                                    text: "Say 'They're a good company. The question is: what's most important to you beyond price? Support? Innovation? Reliability? Let's discuss where you'll get the most value.'",
+                                    scores: { trust: 5, relationship: 5, integrity: 5, confidence: 5 }
+                                },
+                                {
+                                    text: "Immediately offer to beat their price",
+                                    scores: { trust: 1, relationship: 2, integrity: 2, confidence: 1 }
+                                },
+                                {
+                                    text: "Launch into why your solution is superior",
+                                    scores: { trust: 2, relationship: 2, integrity: 3, confidence: 3 }
+                                }
+                            ]
+                        },
+                        {
+                            id: 17,
+                            category: "Relationship Building & Trust",
+                            scenario: "After closing a deal, the customer calls upset: 'Your implementation team dropped the ball. This isn't what you promised!' Your implementation team says the customer had unrealistic expectations. How do you handle this?",
+                            options: [
+                                {
+                                    text: "Defend your team and explain what the customer misunderstood",
+                                    scores: { trust: 1, relationship: 1, accountability: 1, solution: 1 }
+                                },
+                                {
+                                    text: "Say 'I'm sorry you're experiencing this. Let me understand exactly what's happening, then I'll personally ensure we fix it and exceed your original expectations.'",
+                                    scores: { trust: 5, relationship: 5, accountability: 5, solution: 5 }
+                                },
+                                {
+                                    text: "Blame the implementation team and distance yourself",
+                                    scores: { trust: 1, relationship: 1, accountability: 1, solution: 1 }
+                                },
+                                {
+                                    text: "Offer a discount to compensate for the issues",
+                                    scores: { trust: 2, relationship: 3, accountability: 3, solution: 2 }
+                                }
+                            ]
+                        },
+                        {
+                            id: 18,
+                            category: "Relationship Building & Trust",
+                            scenario: "At a networking event, a potential customer mentions they're happy with their current vendor (your competitor) but hints at some frustrations. They haven't directly asked for your help. What do you do?",
+                            options: [
+                                {
+                                    text: "Immediately pitch why your solution is better",
+                                    scores: { trust: 1, relationship: 1, timing: 1, ethics: 1 }
+                                },
+                                {
+                                    text: "Listen empathetically and say 'That sounds challenging. Without pitching anything, what would the ideal solution look like for you?'",
+                                    scores: { trust: 5, relationship: 5, timing: 5, ethics: 5 }
+                                },
+                                {
+                                    text: "Give them your card and say to call if they need anything",
+                                    scores: { trust: 3, relationship: 3, timing: 2, ethics: 4 }
+                                },
+                                {
+                                    text: "Ask directly if they'd consider switching vendors",
+                                    scores: { trust: 2, relationship: 2, timing: 1, ethics: 3 }
+                                }
+                            ]
+                        },
+                        
+                        // Motivation & Mindset
+                        {
+                            id: 19,
+                            category: "Motivation & Mindset",
+                            scenario: "You've lost 5 deals in a row, all to the same competitor. Your confidence is shaken and your pipeline is weak. Your manager asks how you're doing. What's your response and action plan?",
+                            options: [
+                                {
+                                    text: "Blame the competitor's unfair pricing and ask for better tools to compete",
+                                    scores: { resilience: 1, accountability: 1, growth: 1, solution: 1 }
+                                },
+                                {
+                                    text: "Say 'I'm analyzing each loss to identify patterns. I've scheduled calls with those prospects to understand their decisions, and I'm adjusting my approach based on what I learn.'",
+                                    scores: { resilience: 5, accountability: 5, growth: 5, solution: 5 }
+                                },
+                                {
+                                    text: "Hide your struggles and say everything is fine",
+                                    scores: { resilience: 2, accountability: 1, growth: 1, solution: 1 }
+                                },
+                                {
+                                    text: "Ask to be moved to a different territory",
+                                    scores: { resilience: 1, accountability: 1, growth: 1, solution: 2 }
+                                }
+                            ]
+                        },
+                        {
+                            id: 20,
+                            category: "Motivation & Mindset",
+                            scenario: "Your colleague lands a huge deal using a creative approach you've never tried. You're feeling envious and inadequate. How do you channel these feelings?",
+                            options: [
+                                {
+                                    text: "Minimize their success by attributing it to luck",
+                                    scores: { growth: 1, collaboration: 1, maturity: 1, learning: 1 }
+                                },
+                                {
+                                    text: "Congratulate them and ask: 'That was brilliant! Would you mind sharing how you approached it? I'd love to learn from your success.'",
+                                    scores: { growth: 5, collaboration: 5, maturity: 5, learning: 5 }
+                                },
+                                {
+                                    text: "Keep your distance and figure it out on your own",
+                                    scores: { growth: 2, collaboration: 1, maturity: 2, learning: 2 }
+                                },
+                                {
+                                    text: "Copy their approach exactly without understanding why it worked",
+                                    scores: { growth: 2, collaboration: 2, maturity: 2, learning: 1 }
+                                }
+                            ]
+                        },
+                        {
+                            id: 21,
+                            category: "Motivation & Mindset",
+                            scenario: "It's month-end and you're at 60% of quota. You have one deal that could save your month, but the prospect is being unresponsive. Your manager is pressuring you. What's your approach?",
+                            options: [
+                                {
+                                    text: "Bombard the prospect with calls and emails showing urgency",
+                                    scores: { judgment: 1, strategy: 1, professionalism: 1, relationship: 1 }
+                                },
+                                {
+                                    text: "Send one thoughtful message: 'I sense the timing might not be right. Would you prefer I close your file, or is there a specific date you'd like me to follow up?'",
+                                    scores: { judgment: 5, strategy: 5, professionalism: 5, relationship: 5 }
+                                },
+                                {
+                                    text: "Give up on this month and focus on next month's pipeline",
+                                    scores: { judgment: 2, strategy: 2, professionalism: 3, relationship: 3 }
+                                },
+                                {
+                                    text: "Offer an aggressive discount to create urgency",
+                                    scores: { judgment: 2, strategy: 1, professionalism: 2, relationship: 2 }
+                                }
+                            ]
+                        },
+                        
+                        // Advanced Scenarios
+                        {
+                            id: 22,
+                            category: "Strategic Selling",
+                            scenario: "You discover your champion is leaving the company in 30 days. The deal is 70% complete but not signed. The incoming replacement is known to prefer your competitor. What's your strategy?",
+                            options: [
+                                {
+                                    text: "Rush to close before your champion leaves",
+                                    scores: { strategy: 2, relationship: 2, risk: 1, adaptability: 2 }
+                                },
+                                {
+                                    text: "Ask your champion: 'What would you recommend to ensure this project succeeds after you leave? Who else should I be working with to maintain momentum?'",
+                                    scores: { strategy: 5, relationship: 5, risk: 5, adaptability: 5 }
+                                },
+                                {
+                                    text: "Wait to build a relationship with the new person",
+                                    scores: { strategy: 1, relationship: 3, risk: 1, adaptability: 2 }
+                                },
+                                {
+                                    text: "Go over your champion's head to senior leadership",
+                                    scores: { strategy: 2, relationship: 1, risk: 2, adaptability: 2 }
+                                }
+                            ]
+                        },
+                        {
+                            id: 23,
+                            category: "Complex Sales",
+                            scenario: "You're selling to a Fortune 500 company. After 6 months, you realize the person you've been working with has no budget authority and limited influence. They've been hiding this fact. How do you proceed?",
+                            options: [
+                                {
+                                    text: "Confront them about wasting your time",
+                                    scores: { strategy: 1, relationship: 1, emotional: 1, recovery: 1 }
+                                },
+                                {
+                                    text: "Say 'You've been incredibly helpful in understanding your needs. To move forward, who else would need to see value in this solution? I'd love your advice on the best approach.'",
+                                    scores: { strategy: 5, relationship: 5, emotional: 5, recovery: 5 }
+                                },
+                                {
+                                    text: "Abandon the opportunity as lost",
+                                    scores: { strategy: 1, relationship: 2, emotional: 2, recovery: 1 }
+                                },
+                                {
+                                    text: "Go around them directly to senior management",
+                                    scores: { strategy: 2, relationship: 1, emotional: 2, recovery: 2 }
+                                }
+                            ]
+                        },
+                        {
+                            id: 24,
+                            category: "Consultative Selling",
+                            scenario: "During a QBR with your largest customer, they reveal they're considering bringing your solution in-house to save costs. They still have 18 months on their contract. What's your response?",
+                            options: [
+                                {
+                                    text: "Remind them of their contractual obligations",
+                                    scores: { strategy: 1, relationship: 1, value: 1, retention: 1 }
+                                },
+                                {
+                                    text: "Say 'I appreciate your transparency. Let's analyze the total cost of building in-house versus our partnership. What specific outcomes are you trying to achieve?'",
+                                    scores: { strategy: 5, relationship: 5, value: 5, retention: 5 }
+                                },
+                                {
+                                    text: "Immediately offer a significant discount to retain them",
+                                    scores: { strategy: 2, relationship: 3, value: 1, retention: 2 }
+                                },
+                                {
+                                    text: "Accept their decision and start transition planning",
+                                    scores: { strategy: 2, relationship: 4, value: 2, retention: 1 }
+                                }
+                            ]
+                        },
+                        {
+                            id: 25,
+                            category: "Adaptive Selling",
+                            scenario: "You're presenting to a prospect when suddenly the CEO joins unexpectedly and says: 'I have 10 minutes. Tell me why I should care about this.' Your planned presentation is 45 minutes. What do you do?",
+                            options: [
+                                {
+                                    text: "Try to rush through your full presentation",
+                                    scores: { adaptability: 1, judgment: 1, impact: 1, executive: 1 }
+                                },
+                                {
+                                    text: "Say 'In 10 minutes, I can share how companies like yours typically see 40% improvement in [their main metric]. Should I focus on the financial impact, operational efficiency, or competitive advantage?'",
+                                    scores: { adaptability: 5, judgment: 5, impact: 5, executive: 5 }
+                                },
+                                {
+                                    text: "Ask the CEO what they want to know",
+                                    scores: { adaptability: 3, judgment: 3, impact: 3, executive: 3 }
+                                },
+                                {
+                                    text: "Suggest rescheduling when they have more time",
+                                    scores: { adaptability: 1, judgment: 1, impact: 1, executive: 1 }
+                                }
+                            ]
+                        }
+                    ],
+                    categoryScores: {},
+                    overallScore: 0,
+                    swotAnalysis: {
+                        strengths: [],
+                        weaknesses: [],
+                        opportunities: [],
+                        threats: []
+                    },
+                    performanceProfile: '',
+                    detailedAnalysis: {}
+                };
+            },
+            computed: {
+                currentQuestion() {
+                    return this.questions[this.currentQuestionIndex];
+                },
+                progressPercentage() {
+                    return Math.round((this.currentQuestionIndex / this.questions.length) * 100);
+                }
+            },
+            methods: {
+                startAssessment() {
+                    if (this.userData.name && this.userData.email) {
+                        this.stage = 'assessment';
+                        this.startTimer();
+                    }
+                },
+                
+                startTimer() {
+                    this.timer = setInterval(() => {
+                        if (this.timeRemaining > 0) {
+                            this.timeRemaining--;
+                        } else {
+                            this.finishAssessment();
+                        }
+                    }, 1000);
+                },
+                
+                formatTime(seconds) {
+                    const mins = Math.floor(seconds / 60);
+                    const secs = seconds % 60;
+                    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+                },
+                
+                selectAnswer(index) {
+                    this.selectedAnswer = index;
+                },
+                
+                nextQuestion() {
+                    if (this.selectedAnswer !== null) {
+                        // Store the answer
+                        this.answers[this.currentQuestion.id] = {
+                            questionId: this.currentQuestion.id,
+                            selectedOption: this.selectedAnswer,
+                            scores: this.currentQuestion.options[this.selectedAnswer].scores
+                        };
+                        
+                        if (this.currentQuestionIndex < this.questions.length - 1) {
+                            this.currentQuestionIndex++;
+                            this.selectedAnswer = null;
+                        } else {
+                            this.finishAssessment();
+                        }
+                    }
+                },
+                
+                previousQuestion() {
+                    if (this.currentQuestionIndex > 0) {
+                        this.currentQuestionIndex--;
+                        const previousAnswer = this.answers[this.questions[this.currentQuestionIndex].id];
+                        this.selectedAnswer = previousAnswer ? previousAnswer.selectedOption : null;
+                    }
+                },
+                
+                finishAssessment() {
+                    clearInterval(this.timer);
+                    this.calculateScores();
+                    this.generateSWOT();
+                    this.stage = 'results';
+                    this.drawRadarChart();
+                },
+                
+                calculateScores() {
+                    // Initialize category scores
+                    const categories = {
+                        prospecting: { score: 0, count: 0, max: 0 },
+                        discovery: { score: 0, count: 0, max: 0 },
+                        presentation: { score: 0, count: 0, max: 0 },
+                        objection: { score: 0, count: 0, max: 0 },
+                        closing: { score: 0, count: 0, max: 0 },
+                        trust: { score: 0, count: 0, max: 0 },
+                        mindset: { score: 0, count: 0, max: 0 }
+                    };
+                    
+                    // Calculate scores for each category
+                    Object.values(this.answers).forEach(answer => {
+                        Object.entries(answer.scores).forEach(([skill, score]) => {
+                            // Map skills to main categories
+                            let category = skill;
+                            if (['strategic', 'efficiency'].includes(skill)) category = 'prospecting';
+                            if (['relationship', 'empathy'].includes(skill)) category = 'trust';
+                            if (['adaptability', 'leadership'].includes(skill)) category = 'presentation';
+                            if (['negotiation', 'persistence'].includes(skill)) category = 'objection';
+                            if (['solution', 'creativity'].includes(skill)) category = 'closing';
+                            if (['growth', 'resilience', 'accountability'].includes(skill)) category = 'mindset';
+                            if (['discovery', 'listening'].includes(skill)) category = 'discovery';
+                            
+                            if (categories[category]) {
+                                categories[category].score += score;
+                                categories[category].count += 1;
+                                categories[category].max += 5; // Max score per question is 5
+                            }
+                        });
+                    });
+                    
+                    // Calculate percentage scores
+                    Object.keys(categories).forEach(category => {
+                        const cat = categories[category];
+                        if (cat.max > 0) {
+                            this.categoryScores[category] = Math.round((cat.score / cat.max) * 100);
+                        } else {
+                            this.categoryScores[category] = 0;
+                        }
+                    });
+                    
+                    // Calculate overall score
+                    const scores = Object.values(this.categoryScores);
+                    this.overallScore = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+                },
+                
+                generateSWOT() {
+                    const scores = this.categoryScores;
+                    
+                    // Identify strengths (>80%)
+                    this.swotAnalysis.strengths = [];
+                    if (scores.prospecting > 80) this.swotAnalysis.strengths.push("Exceptional pipeline management and strategic prospecting abilities");
+                    if (scores.discovery > 80) this.swotAnalysis.strengths.push("Outstanding needs discovery and qualification skills");
+                    if (scores.presentation > 80) this.swotAnalysis.strengths.push("Superior value communication and presentation capabilities");
+                    if (scores.objection > 80) this.swotAnalysis.strengths.push("Expert objection handling and negotiation skills");
+                    if (scores.closing > 80) this.swotAnalysis.strengths.push("Excellent closing techniques and deal advancement");
+                    if (scores.trust > 80) this.swotAnalysis.strengths.push("Strong relationship building and trust development");
+                    if (scores.mindset > 80) this.swotAnalysis.strengths.push("Exceptional resilience and growth mindset");
+                    
+                    // Identify weaknesses (<50%)
+                    this.swotAnalysis.weaknesses = [];
+                    if (scores.prospecting < 50) this.swotAnalysis.weaknesses.push("Pipeline management needs significant improvement");
+                    if (scores.discovery < 50) this.swotAnalysis.weaknesses.push("Needs discovery skills require development");
+                    if (scores.presentation < 50) this.swotAnalysis.weaknesses.push("Value proposition communication needs strengthening");
+                    if (scores.objection < 50) this.swotAnalysis.weaknesses.push("Objection handling techniques need refinement");
+                    if (scores.closing < 50) this.swotAnalysis.weaknesses.push("Closing skills require immediate attention");
+                    if (scores.trust < 50) this.swotAnalysis.weaknesses.push("Relationship building capabilities need work");
+                    if (scores.mindset < 50) this.swotAnalysis.weaknesses.push("Mental resilience and mindset need development");
+                    
+                    // Generate opportunities
+                    this.swotAnalysis.opportunities = [
+                        "Implement structured sales methodology training",
+                        "Develop mentor relationships with top performers",
+                        "Practice role-playing for weak areas",
+                        "Study successful deal patterns in your industry"
+                    ];
+                    
+                    // Generate threats
+                    this.swotAnalysis.threats = [
+                        "Competition from sales reps with stronger skillsets",
+                        "Changing buyer behaviors requiring adaptation",
+                        "Technology disruption in sales processes",
+                        "Economic factors affecting buying decisions"
+                    ];
+                },
+                
+                getPerformanceLevel(score) {
+                    if (score >= 85) return "Sales Superstar - Top 10% Performance Level";
+                    if (score >= 70) return "Strong Performer - Above Average Skills";
+                    if (score >= 55) return "Developing Professional - Good Foundation";
+                    return "Growth Opportunity - Focus on Skill Building";
+                },
+                
+                getCompetencyLevel(score) {
+                    if (score >= 80) return "Expert";
+                    if (score >= 65) return "Proficient";
+                    if (score >= 50) return "Developing";
+                    return "Needs Focus";
+                },
+                
+                getScoreColor(score) {
+                    if (score >= 80) return "#22c55e";
+                    if (score >= 65) return "#3b82f6";
+                    if (score >= 50) return "#f59e0b";
+                    return "#ef4444";
+                },
+                
+                formatCategoryName(category) {
+                    const names = {
+                        prospecting: "Prospecting & Pipeline",
+                        discovery: "Needs Discovery",
+                        presentation: "Value Presentation",
+                        objection: "Objection Handling",
+                        closing: "Closing Skills",
+                        trust: "Trust Building",
+                        mindset: "Mindset & Resilience"
+                    };
+                    return names[category] || category;
+                },
+                
+                drawRadarChart() {
+                    setTimeout(() => {
+                        const ctx = document.getElementById('radarChart').getContext('2d');
+                        const data = {
+                            labels: Object.keys(this.categoryScores).map(cat => this.formatCategoryName(cat)),
+                            datasets: [{
+                                label: 'Your Scores',
+                                data: Object.values(this.categoryScores),
+                                backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                                borderColor: 'rgba(102, 126, 234, 1)',
+                                borderWidth: 2,
+                                pointBackgroundColor: 'rgba(102, 126, 234, 1)',
+                                pointBorderColor: '#fff',
+                                pointBorderWidth: 2,
+                                pointRadius: 5
+                            }]
+                        };
+                        
+                        new Chart(ctx, {
+                            type: 'radar',
+                            data: data,
+                            options: {
+                                scales: {
+                                    r: {
+                                        beginAtZero: true,
+                                        max: 100,
+                                        ticks: {
+                                            stepSize: 20
+                                        }
+                                    }
+                                },
+                                plugins: {
+                                    legend: {
+                                        display: false
+                                    }
+                                }
+                            }
+                        });
+                    }, 100);
+                },
+                
+                downloadReport() {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF();
+                    
+                    // Header
+                    doc.setFontSize(24);
+                    doc.setTextColor(102, 126, 234);
+                    doc.text('Sales Excellence Assessment Report', 105, 20, { align: 'center' });
+                    
+                    // User info
+                    doc.setFontSize(12);
+                    doc.setTextColor(0, 0, 0);
+                    doc.text(`Name: ${this.userData.name}`, 20, 40);
+                    doc.text(`Email: ${this.userData.email}`, 20, 48);
+                    doc.text(`Company: ${this.userData.company || 'N/A'}`, 20, 56);
+                    doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, 64);
+                    
+                    // Overall Score
+                    doc.setFontSize(18);
+                    doc.setTextColor(102, 126, 234);
+                    doc.text(`Overall Score: ${this.overallScore}%`, 105, 85, { align: 'center' });
+                    
+                    doc.setFontSize(14);
+                    doc.setTextColor(0, 0, 0);
+                    doc.text(this.getPerformanceLevel(this.overallScore), 105, 95, { align: 'center' });
+                    
+                    // Category Scores
+                    doc.setFontSize(16);
+                    doc.text('Competency Breakdown:', 20, 115);
+                    
+                    let yPos = 125;
+                    Object.entries(this.categoryScores).forEach(([category, score]) => {
+                        doc.setFontSize(12);
+                        doc.text(`${this.formatCategoryName(category)}: ${score}% - ${this.getCompetencyLevel(score)}`, 25, yPos);
+                        yPos += 8;
+                    });
+                    
+                    // Add new page for SWOT
+                    doc.addPage();
+                    
+                    // SWOT Analysis
+                    doc.setFontSize(18);
+                    doc.text('SWOT Analysis', 105, 20, { align: 'center' });
+                    
+                    // Strengths
+                    doc.setFontSize(14);
+                    doc.setTextColor(30, 126, 52);
+                    doc.text('Strengths:', 20, 40);
+                    doc.setFontSize(11);
+                    doc.setTextColor(0, 0, 0);
+                    yPos = 48;
+                    this.swotAnalysis.strengths.forEach(strength => {
+                        const lines = doc.splitTextToSize(`• ${strength}`, 170);
+                        doc.text(lines, 25, yPos);
+                        yPos += lines.length * 5;
+                    });
+                    
+                    // Weaknesses
+                    doc.setFontSize(14);
+                    doc.setTextColor(189, 33, 48);
+                    doc.text('Areas for Improvement:', 20, yPos + 10);
+                    doc.setFontSize(11);
+                    doc.setTextColor(0, 0, 0);
+                    yPos += 18;
+                    this.swotAnalysis.weaknesses.forEach(weakness => {
+                        const lines = doc.splitTextToSize(`• ${weakness}`, 170);
+                        doc.text(lines, 25, yPos);
+                        yPos += lines.length * 5;
+                    });
+                    
+                    // Recommendations
+                    doc.addPage();
+                    doc.setFontSize(18);
+                    doc.text('Personalized Development Plan', 105, 20, { align: 'center' });
+                    
+                    doc.setFontSize(12);
+                    yPos = 40;
+                    
+                    // Generate personalized recommendations based on weak areas
+                    const recommendations = this.generatePersonalizedRecommendations();
+                    recommendations.forEach((rec, index) => {
+                        doc.setFontSize(12);
+                        doc.setFont(undefined, 'bold');
+                        doc.text(`${index + 1}. ${rec.title}`, 20, yPos);
+                        doc.setFont(undefined, 'normal');
+                        doc.setFontSize(11);
+                        const lines = doc.splitTextToSize(rec.description, 170);
+                        doc.text(lines, 25, yPos + 8);
+                        yPos += lines.length * 5 + 15;
+                    });
+                    
+                    // Save the PDF
+                    doc.save(`Sales_Assessment_${this.userData.name.replace(/\s+/g, '_')}_${new Date().getTime()}.pdf`);
+                },
+                
+                generatePersonalizedRecommendations() {
+                    const recommendations = [];
+                    
+                    // Add recommendations based on weak areas
+                    Object.entries(this.categoryScores).forEach(([category, score]) => {
+                        if (score < 65) {
+                            const recs = this.getRecommendationsForCategory(category);
+                            recommendations.push(...recs);
+                        }
+                    });
+                    
+                    return recommendations.slice(0, 5); // Top 5 recommendations
+                },
+                
+                getRecommendationsForCategory(category) {
+                    const recommendations = {
+                        prospecting: [
+                            {
+                                title: "Implement Strategic Prospecting Framework",
+                                description: "Develop a systematic approach to identifying and qualifying prospects. Focus on quality over quantity, research ideal customer profiles, and use warm introduction strategies."
+                            }
+                        ],
+                        discovery: [
+                            {
+                                title: "Master Consultative Questioning",
+                                description: "Practice open-ended questions that uncover business impact. Use the SPIN selling methodology to identify Situation, Problem, Implication, and Need-payoff."
+                            }
+                        ],
+                        presentation: [
+                            {
+                                title: "Develop Compelling Value Stories",
+                                description: "Create a library of customer success stories that demonstrate ROI. Practice adapting your presentation to different stakeholder priorities in real-time."
+                            }
+                        ],
+                        objection: [
+                            {
+                                title: "Build Objection Response Playbook",
+                                description: "Document common objections and develop thoughtful responses. Practice reframing objections as opportunities to provide additional value."
+                            }
+                        ],
+                        closing: [
+                            {
+                                title: "Master Trial Closing Techniques",
+                                description: "Learn to test buying readiness throughout the sales process. Practice assumptive closes and creating urgency without pressure."
+                            }
+                        ],
+                        trust: [
+                            {
+                                title: "Enhance Emotional Intelligence",
+                                description: "Develop active listening skills and practice empathy. Focus on understanding customer emotions and building authentic relationships."
+                            }
+                        ],
+                        mindset: [
+                            {
+                                title: "Cultivate Growth Mindset",
+                                description: "Embrace failures as learning opportunities. Set up a regular review process to analyze wins and losses for continuous improvement."
+                            }
+                        ]
+                    };
+                    
+                    return recommendations[category] || [];
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
